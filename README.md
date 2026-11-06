@@ -2,7 +2,7 @@
 
 > High-contrast bionic-style reading extension for Chrome to guide your eyes, improve focus, and elevate dark-mode typography.
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](./bionic-reader/manifest.json)
+[![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](./bionic-reader/manifest.json)
 [![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-success.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![Project](https://img.shields.io/badge/VibeCoded-Project-6366f1.svg?style=flat&logo=rocket)](https://github.com/charles-owo/VibeCodedProject-Bionic-Reader)
 
@@ -48,7 +48,7 @@ Prefer not to install an extension? You can also use the bookmarklet:
 - **Theme-Aware High Contrast**: Custom tuned for dark mode (Medium, Twitter, Reddit) with bold anchor highlights and customizable rest dimming.
 - **Anchor Color Palette**: Choose between Pure White, Warm Amber (night mode), Electric Cyan, Mint Emerald, and Lilac.
 - **Dynamic Infinite Scroll**: Debounced `MutationObserver` formats newly loaded articles seamlessly as you scroll.
-- **DOM-Safe & Non-Destructive**: Reverts to original text cleanly on toggle off; protects code snippets, forms, and supports Notion.
+- **DOM-Safe & Non-Destructive**: Reverts to original text cleanly on toggle off; protects code snippets, forms, headings, math equations, and app/navigation chrome, and supports Notion.
 
 ---
 

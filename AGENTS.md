@@ -6,7 +6,7 @@
 
 A small collection of Chrome extensions. Currently contains one extension:
 
-- **Bionic Reader** (`bionic-reader/`, v1.1.0, Manifest V3) — reformats page text into
+- **Bionic Reader** (`bionic-reader/`, v1.1.1, Manifest V3) — reformats page text into
   Bionic Reading style (bold fixation anchors + dimmed rest letters) to guide eye saccades.
   Vanilla JS/CSS/HTML only. No dependencies, no bundler, no test framework.
 
@@ -43,15 +43,18 @@ document it in both READMEs.
 - **Settings shape is triplicated.** `DEFAULT_SETTINGS` exists in `background.js`,
   `content.js`, and `popup.js`. Any key added/removed/renamed must be updated in
   all three, plus the popup UI and `applyCSSVariables`/`updateSettings` handling.
-- **Version is quadruplicated.** Bump `manifest.json`, `popup.html` (`.version`
-  badge), and both `README.md` badges together.
+- **Version lives in 7 spots.** Bump `manifest.json`, `popup.html` (`.version`
+  badge), `test.html` (badge), both `README.md` badges, and both `AGENTS.md`
+  version lines together.
 - **Non-destructive DOM contract.** Original text is stored in `data-bionic-orig`
   on `span.bionic-reader-text`; `disableBionic()` must fully restore it and remove
   all CSS vars/attributes/classes it added. Never leave formatting residue behind.
-- **Never format protected content.** `IGNORED_TAGS`, `ALWAYS_IGNORED_SELECTORS`,
-  and editable regions (`contenteditable`, textbox/combobox/searchbox roles, plus
-  Notion exception via `isKnownReaderApp`) must keep working. Code, forms, editors,
-  SVG/math, and media stay untouched.
+- **Never format protected content.** `IGNORED_TAGS`, `ALWAYS_IGNORED_SELECTORS`
+  (app/nav chrome, headings, KaTeX/MathJax equations, Notion sidebar/topbar),
+  and editable regions (`contenteditable`, `textbox` role, plus Notion exception
+  via `isKnownReaderApp`) must keep working. On reader apps only the actively
+  edited block is skipped (`isNodeInActiveEdit`) — never the whole editor
+  subtree. Keep `bookmarklet.html`'s embedded ignore logic in parity.
 - **MV3 service worker limits.** `background.js` has no DOM access and no persistent
   state — badge/shortcut logic only, state lives in `chrome.storage.sync`.
 - **Permissions are minimal** (`storage`, `activeTab`). Do not add host permissions

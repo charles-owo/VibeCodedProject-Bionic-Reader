@@ -1,6 +1,6 @@
 # ⚡ VibeCodedProject — Bionic-Style Speed Reader
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](./manifest.json)
+[![Version](https://img.shields.io/badge/version-1.1.1-blue.svg)](./manifest.json)
 [![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-success.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![Project](https://img.shields.io/badge/VibeCoded-Project-6366f1.svg?style=flat&logo=rocket)](https://github.com/charles-owo/VibeCodedProject-Bionic-Reader)
 
@@ -24,7 +24,7 @@ A fast, lightweight, and customizable Chrome extension built with Manifest V3 th
 - **🧠 Visual Anchor Guidance**: Bolds words using an adaptive algorithm that accounts for word length, contractions (`don't`), hyphenations (`state-of-the-art`), and punctuation.
 - **🛡️ DOM-Safe & Non-Destructive**:
   - Zero disruption to inputs, textareas, and code blocks (`<pre>`, `<code>`, Monaco, CodeMirror).
-  - Built-in support for reading in workspace apps like Notion while keeping formulas and code blocks untouched.
+  - Built-in support for reading in workspace apps like Notion: page content formats while only the block being edited is left alone. Equation blocks (KaTeX, MathJax), headings, and app/navigation chrome (sidebars, menus, buttons) stay untouched.
   - Toggling OFF completely restores the page to its original text without needing a refresh.
 - **🔄 Dynamic Content & Infinite Scroll**: Includes an optimized, debounced `MutationObserver` that automatically processes newly loaded content on infinite-scrolling platforms.
 - **🎛️ Full Customization**:

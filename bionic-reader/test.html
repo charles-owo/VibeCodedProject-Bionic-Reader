@@ -216,7 +216,7 @@
   <div class="container">
     <header>
       <div>
-        <span class="badge">Bionic-Style Reader v1.1.0 Verification</span>
+        <span class="badge">Bionic-Style Reader v1.1.1 Verification</span>
         <h1>High-Contrast Testing Page</h1>
         <p class="subtitle">Optimized for dark mode sites, serif articles (like Medium), and custom contrast tuning.</p>
       </div>
@@ -267,6 +267,41 @@ String line;
 while ((line = reader.readLine()) != null) {
     processLine(line);
 }</code></pre>
+    </section>
+
+    <!-- Section: Chrome / Headings / Equations Protection -->
+    <section>
+      <h2>Untouched Chrome, Headings &amp; Equations</h2>
+      <p style="color: var(--muted); font-size: 14px;">
+        Every block below must stay plain when Bionic Reading is ON — as must the
+        headings on this page. (This intro line is a regular paragraph, so it formats normally.)
+      </p>
+      <nav style="margin-bottom: 16px;">
+        <span>Sidebar navigation links stay plain:</span>
+        <a href="#" onclick="return false;" style="color: var(--accent); margin-left: 8px;">Search or ask</a>
+        <a href="#" onclick="return false;" style="color: var(--accent); margin-left: 8px;">New chat</a>
+        <a href="#" onclick="return false;" style="color: var(--accent); margin-left: 8px;">Email Assistant</a>
+      </nav>
+      <aside style="border: 1px dashed var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        Complementary aside content stays plain and keeps its muted tone.
+      </aside>
+      <div role="menu" style="margin-bottom: 16px;">
+        <span role="menuitem" style="margin-right: 12px;">Menu item one</span>
+        <span role="menuitem">Menu item two</span>
+      </div>
+      <div class="katex" style="background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        Equation block stays as-is: ∇f = [2x, 2y], magnitude = 2√(x² + y²)
+      </div>
+      <div class="notion-header-block" style="font-size: 22px; font-weight: 600; margin-bottom: 8px;">
+        Notion heading block stays as-is.
+      </div>
+      <div placeholder="Heading 2" style="font-size: 19px; font-weight: 600; margin-bottom: 16px;">
+        Notion placeholder heading stays as-is.
+      </div>
+      <div contenteditable="true" style="border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        Editable scratch pad stays plain here. Click and type to confirm the caret never jumps.
+      </div>
+      <button class="btn" type="button" onclick="return false;">Sample Button Label</button>
     </section>
 
     <!-- Section: Dynamic Content Observer -->

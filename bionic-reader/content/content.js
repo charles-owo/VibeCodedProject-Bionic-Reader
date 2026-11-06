@@ -28,25 +28,87 @@
     'SVG', 'CANVAS', 'IFRAME', 'VIDEO', 'AUDIO', 'OBJECT', 'EMBED', 'MATH'
   ]);
 
-  // Selectors that should ALWAYS be ignored (code editors, bionic elements)
-  const ALWAYS_IGNORED_SELECTORS = [
+  // Selectors that should ALWAYS be ignored on all sites (code editors, bionic elements,
+  // headings, math equations)
+  const COMMON_IGNORED_SELECTORS = [
     '.monaco-editor',
     '.CodeMirror',
     '.ace_editor',
-    '.notranslate',
-    '[translate="no"]',
     '.bionic-reader-text',
     '.bionic-reader-toast',
-    '[data-bionic-ignore]'
+    '[data-bionic-ignore]',
+    // Headings stay as-is (already carry their own emphasis)
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    '[role="heading"]',
+    // Math equations stay as-is (KaTeX, MathJax, Notion equation blocks)
+    '.katex',
+    '.katex-html',
+    '.katex-display',
+    '.MathJax',
+    'mjx-container',
+    '.notion-equation-block',
+    '.notion-text-equation-token',
+    'math'
   ];
 
-  // Selectors ignored only on non-whitelisted sites (contenteditable regions)
-  const EDITABLE_SELECTORS = [
+  // Additional selectors ignored on Notion (protect app navigation chrome & Notion headings)
+  const NOTION_IGNORED_SELECTORS = [
+    ...COMMON_IGNORED_SELECTORS,
+    '.notion-sidebar-container',
+    '.notion-sidebar',
+    '.notion-topbar',
+    '.notion-topbar-action-buttons',
+    '.notion-header-block',
+    '.notion-sub_header-block',
+    '.notion-sub_sub_header-block',
+    '[placeholder="Heading 1"]',
+    '[placeholder="Heading 2"]',
+    '[placeholder="Heading 3"]',
+    '.notion-page-title',
+    '[placeholder="Untitled"]',
+    '.notion-page-discussion',
+    '.notion-page-comments',
+    '.notion-discussion-block',
+    '.notion-page-properties',
+    '.notion-collection-page-properties',
+    'button',
+    '[role="button"]',
+    '[role="menu"]',
+    '[role="menuitem"]',
+    '[role="toolbar"]'
+  ];
+
+  // Standard selectors ignored on regular non-reader sites (protect buttons, menus, inputs)
+  const STANDARD_IGNORED_SELECTORS = [
+    ...COMMON_IGNORED_SELECTORS,
+    '.notranslate',
+    '[translate="no"]',
+    'nav',
+    'aside',
+    'button',
+    '[role="navigation"]',
+    '[role="banner"]',
+    '[role="contentinfo"]',
+    '[role="complementary"]',
+    '[role="menu"]',
+    '[role="menubar"]',
+    '[role="menuitem"]',
+    '[role="tab"]',
+    '[role="tablist"]',
+    '[role="button"]',
+    '[role="search"]',
+    '[role="searchbox"]',
+    '[role="combobox"]',
+    '[role="toolbar"]',
+    '[aria-hidden="true"]',
     '[contenteditable="true"]',
     '[contenteditable=""]',
-    '[role="textbox"]',
-    '[role="combobox"]',
-    '[role="searchbox"]'
+    '[role="textbox"]'
   ];
 
   // Known reader apps where contenteditable wraps the whole page
@@ -60,14 +122,20 @@
   }
 
   const isReaderApp = isKnownReaderApp();
-  const IGNORED_SELECTORS = [
-    ...ALWAYS_IGNORED_SELECTORS,
-    ...(isReaderApp ? [] : EDITABLE_SELECTORS)
-  ].join(', ');
+  const IGNORED_SELECTORS = (isReaderApp ? NOTION_IGNORED_SELECTORS : STANDARD_IGNORED_SELECTORS).join(', ');
 
   function detectPageTheme() {
     try {
-      const candidates = [document.body, document.documentElement];
+      const candidates = [
+        document.querySelector('.notion-scroller'),
+        document.querySelector('.notion-frame'),
+        document.querySelector('.notion-app-inner'),
+        document.querySelector('#notion-app'),
+        document.querySelector('main'),
+        document.querySelector('[role="main"]'),
+        document.body,
+        document.documentElement
+      ];
       for (const el of candidates) {
         if (!el) continue;
         const bg = window.getComputedStyle(el).backgroundColor;
@@ -145,6 +213,26 @@
     return result;
   }
 
+  // In reader apps, skip only the element currently holding keyboard focus
+  // (e.g. while actively typing), but never skip the whole page/canvas container.
+  function isNodeInActiveEdit(node) {
+    const active = document.activeElement;
+    if (!active || active === document.body || active === document.documentElement) return false;
+    if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') {
+      return active.contains(node);
+    }
+    // Never treat whole page scrollers or content containers as a single edit target
+    if (active.classList && (
+      active.classList.contains('notion-page-content') ||
+      active.classList.contains('notion-scroller') ||
+      active.classList.contains('notion-frame') ||
+      active.classList.contains('notion-app-inner')
+    )) {
+      return false;
+    }
+    return active.contains(node);
+  }
+
   function isValidTextNode(node) {
     if (!node || node.nodeType !== Node.TEXT_NODE) return false;
     if (!node.nodeValue || !node.nodeValue.trim()) return false;
@@ -152,9 +240,7 @@
     if (!parent) return false;
     if (IGNORED_TAGS.has(parent.tagName)) return false;
     if (!isReaderApp && parent.isContentEditable) return false;
-    if (isReaderApp && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement && document.activeElement.contains(node)) {
-      return false;
-    }
+    if (isReaderApp && isNodeInActiveEdit(node)) return false;
     if (parent.closest && parent.closest(IGNORED_SELECTORS)) return false;
     return true;
   }
