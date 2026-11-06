@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bionic Reader</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <img src="../icons/icon-32.png" alt="Bionic Reader Icon" class="logo">
+        <div class="brand-text">
+          <h1>Bionic Reader</h1>
+          <span class="version">v1.1</span>
+        </div>
+      </div>
+      <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Inactive</span>
+      </div>
+    </header>
+
+    <!-- Main Toggle Card -->
+    <div class="card master-card">
+      <div class="master-info">
+        <span class="master-title">Bionic Reading</span>
+        <span class="master-subtitle" id="masterSubtitle">Turn on for this page</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="mainToggle">
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <!-- Live Preview Box -->
+    <div class="preview-box">
+      <div class="preview-header">
+        <span class="preview-label">Live Preview</span>
+        <span class="preview-hint" id="previewThemeLabel">Dark Theme Optimized</span>
+      </div>
+      <p class="preview-content" id="previewText">
+        <b class="bionic-bold">Bio</b><span class="bionic-rest">nic</span> 
+        <b class="bionic-bold">read</b><span class="bionic-rest">ing</span> 
+        <b class="bionic-bold">gui</b><span class="bionic-rest">des</span> 
+        <b class="bionic-bold">yo</b><span class="bionic-rest">ur</span> 
+        <b class="bionic-bold">ey</b><span class="bionic-rest">es</span> 
+        <b class="bionic-bold">smoo</b><span class="bionic-rest">thly</span>.
+      </p>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="controls-section">
+      <!-- Contrast / Rest Dimming -->
+      <div class="control-group">
+        <div class="control-header">
+          <label for="restOpacitySlider">Reading Contrast (Dimming)</label>
+          <span class="control-val" id="restOpacityValue">High (65%)</span>
+        </div>
+        <input type="range" id="restOpacitySlider" min="35" max="100" step="5" value="65">
+        <div class="range-ticks">
+          <span>Max (35%)</span>
+          <span>High (65%)</span>
+          <span>Subtle (100%)</span>
+        </div>
+      </div>
+
+      <!-- Anchor Color Accent -->
+      <div class="control-group">
+        <div class="control-header">
+          <label>Anchor Highlight Color</label>
+          <span class="control-val" id="anchorColorValue">Monochrome (White)</span>
+        </div>
+        <div class="color-palette" id="colorPalette">
+          <button type="button" class="color-swatch active" data-color="default" title="Auto High Contrast (White/Black)">
+            <span class="swatch-circle auto-swatch"></span>
+          </button>
+          <button type="button" class="color-swatch" data-color="amber" title="Warm Amber (Great for Night/Dark Mode)">
+            <span class="swatch-circle amber-swatch"></span>
+          </button>
+          <button type="button" class="color-swatch" data-color="cyan" title="Electric Cyan">
+            <span class="swatch-circle cyan-swatch"></span>
+          </button>
+          <button type="button" class="color-swatch" data-color="emerald" title="Mint Emerald">
+            <span class="swatch-circle emerald-swatch"></span>
+          </button>
+          <button type="button" class="color-swatch" data-color="purple" title="Lilac Purple">
+            <span class="swatch-circle purple-swatch"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bold Weight -->
+      <div class="control-group">
+        <div class="control-header">
+          <label>Bold Weight</label>
+          <span class="control-val" id="boldWeightValue">800 (Extra Bold)</span>
+        </div>
+        <div class="segmented-control" id="boldWeightGroup">
+          <button type="button" class="segment-btn" data-weight="600">600</button>
+          <button type="button" class="segment-btn" data-weight="700">700</button>
+          <button type="button" class="segment-btn active" data-weight="800">800</button>
+          <button type="button" class="segment-btn" data-weight="900">900</button>
+        </div>
+      </div>
+
+      <!-- Fixation Strength -->
+      <div class="control-group">
+        <div class="control-header">
+          <label for="fixationSlider">Fixation Length</label>
+          <span class="control-val" id="fixationValue">Balanced (45%)</span>
+        </div>
+        <input type="range" id="fixationSlider" min="20" max="75" step="5" value="45">
+        <div class="range-ticks">
+          <span>Light (25%)</span>
+          <span>Balanced</span>
+          <span>Strong (70%)</span>
+        </div>
+      </div>
+
+      <!-- Minimum Word Length -->
+      <div class="control-group">
+        <div class="control-header">
+          <label>Minimum Word Length</label>
+          <span class="control-val" id="minWordValue">2+ letters</span>
+        </div>
+        <div class="segmented-control" id="minWordGroup">
+          <button type="button" class="segment-btn" data-len="1">All (1+)</button>
+          <button type="button" class="segment-btn active" data-len="2">2+ letters</button>
+          <button type="button" class="segment-btn" data-len="3">3+ letters</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Automation & Preferences -->
+    <div class="card settings-card">
+      <div class="setting-row">
+        <div class="setting-meta">
+          <span class="setting-title" id="domainAutoRunLabel">Always on this site</span>
+          <span class="setting-sub" id="currentDomainText">Loading site...</span>
+        </div>
+        <label class="switch small-switch">
+          <input type="checkbox" id="domainAutoRunToggle">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="setting-row">
+        <div class="setting-meta">
+          <span class="setting-title">Auto-run on all websites</span>
+          <span class="setting-sub">Apply automatically everywhere</span>
+        </div>
+        <label class="switch small-switch">
+          <input type="checkbox" id="globalAutoRunToggle">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <button type="button" class="btn-text" id="resetDefaultsBtn">Reset Defaults</button>
+      <div class="shortcut-pill">
+        Shortcut: <kbd>Alt</kbd> + <kbd>B</kbd>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
