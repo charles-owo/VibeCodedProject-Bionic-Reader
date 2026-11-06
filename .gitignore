@@ -22,3 +22,5 @@ yarn-error.log*
 # Build / scratch
 scratch/
 *.tmp
+*.zip
+dist/

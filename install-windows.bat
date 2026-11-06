@@ -1,7 +1,7 @@
 @echo off
-title Bionic Reader Installer
+title Bionic-Style Reader Setup
 echo ======================================================
-echo  Installing Bionic Reader for Google Chrome...
+echo  Setting up Bionic-Style Reader for Google Chrome...
 echo ======================================================
 
 set "SOURCE_DIR=%~dp0bionic-reader"

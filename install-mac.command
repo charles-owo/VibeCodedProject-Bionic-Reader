@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ========================================================
-# ⚡ VibeCodedProject — Bionic Reader Mac Installer
-# Double-click this file to set up Bionic Reader in Chrome
+# ⚡ VibeCodedProject — Bionic-Style Reader Mac Installer
+# Double-click this file to set up the extension in Chrome
 # ========================================================
 
 set -e
@@ -15,7 +15,7 @@ fi
 TARGET_DIR="$HOME/Library/Application Support/BionicReader"
 
 echo "======================================================"
-echo "⚡ Installing Bionic Reader..."
+echo "⚡ Setting up Bionic-Style Speed Reader..."
 echo "======================================================"
 
 # 1. Create target directory and copy extension files
@@ -35,7 +35,7 @@ open -a "Google Chrome" "chrome://extensions" 2>/dev/null || open -a "Chromium" 
 open -R "$TARGET_DIR/manifest.json" 2>/dev/null || open "$TARGET_DIR" 2>/dev/null || true
 
 # 5. Display friendly Native macOS Dialog
-osascript -e 'display alert "⚡ Bionic Reader Ready!" message "1. In Chrome, turn ON \"Developer mode\" (toggle in top-right).\n2. Click \"Load unpacked\" (top-left).\n3. Select the BionicReader folder opened in Finder (path is also copied to clipboard).\n\nEnjoy Bionic Reading!" buttons {"Done"} default button 1' 2>/dev/null || true
+osascript -e 'display alert "⚡ Bionic-Style Reader Ready!" message "1. In Chrome, turn ON \"Developer mode\" (toggle in top-right).\n2. Click \"Load unpacked\" (top-left).\n3. Select the BionicReader folder opened in Finder (path is also copied to clipboard).\n\nEnjoy focused reading!" buttons {"Done"} default button 1' 2>/dev/null || true
 
 echo ""
 echo "======================================================"

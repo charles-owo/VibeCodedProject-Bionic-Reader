@@ -28,12 +28,8 @@
     'SVG', 'CANVAS', 'IFRAME', 'VIDEO', 'AUDIO', 'OBJECT', 'EMBED', 'MATH'
   ]);
 
-  const IGNORED_SELECTORS = [
-    '[contenteditable="true"]',
-    '[contenteditable=""]',
-    '[role="textbox"]',
-    '[role="combobox"]',
-    '[role="searchbox"]',
+  // Selectors that should ALWAYS be ignored (code editors, bionic elements)
+  const ALWAYS_IGNORED_SELECTORS = [
     '.monaco-editor',
     '.CodeMirror',
     '.ace_editor',
@@ -42,6 +38,31 @@
     '.bionic-reader-text',
     '.bionic-reader-toast',
     '[data-bionic-ignore]'
+  ];
+
+  // Selectors ignored only on non-whitelisted sites (contenteditable regions)
+  const EDITABLE_SELECTORS = [
+    '[contenteditable="true"]',
+    '[contenteditable=""]',
+    '[role="textbox"]',
+    '[role="combobox"]',
+    '[role="searchbox"]'
+  ];
+
+  // Known reader apps where contenteditable wraps the whole page
+  function isKnownReaderApp() {
+    try {
+      const host = window.location.hostname;
+      return /(^|\.)(notion\.(so|com|site))$/i.test(host);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  const isReaderApp = isKnownReaderApp();
+  const IGNORED_SELECTORS = [
+    ...ALWAYS_IGNORED_SELECTORS,
+    ...(isReaderApp ? [] : EDITABLE_SELECTORS)
   ].join(', ');
 
   function detectPageTheme() {
@@ -130,7 +151,10 @@
     const parent = node.parentElement;
     if (!parent) return false;
     if (IGNORED_TAGS.has(parent.tagName)) return false;
-    if (parent.isContentEditable) return false;
+    if (!isReaderApp && parent.isContentEditable) return false;
+    if (isReaderApp && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement && document.activeElement.contains(node)) {
+      return false;
+    }
     if (parent.closest && parent.closest(IGNORED_SELECTORS)) return false;
     return true;
   }
