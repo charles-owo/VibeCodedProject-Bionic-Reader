@@ -10,7 +10,7 @@ A fast, lightweight, and customizable Chrome extension built with Manifest V3 th
 
 ## 🚀 Key Features
 
-- **⚡ Instant On/Off**: Toggle anytime with a single click in the popup or using the keyboard shortcut (<kbd>Alt</kbd> + <kbd>B</kbd>).
+- **⚡ Instant On/Off**: Toggle anytime with a single click in the popup or using the keyboard shortcut (<kbd>Option ⌥</kbd> / <kbd>Alt</kbd> + <kbd>B</kbd>).
 - **🌗 Theme-Aware High Contrast (v1.1)**:
   - Specially optimized for dark mode websites (like Medium, Twitter, Reddit) and serif typography.
   - Automatically raises bold anchor contrast with crisp font-stroke definition (`-webkit-text-stroke: 0.35px`) and subtle text shadow.
@@ -67,7 +67,7 @@ A fast, lightweight, and customizable Chrome extension built with Manifest V3 th
 
 | Shortcut | Action |
 | :--- | :--- |
-| <kbd>Alt</kbd> + <kbd>B</kbd> | Toggle bionic-style reading on the current tab |
+| <kbd>Option ⌥</kbd> (Mac) / <kbd>Alt</kbd> (Win/Linux) + <kbd>B</kbd> | Toggle bionic-style reading on the current tab |
 
 *(Customize shortcuts anytime at `chrome://extensions/shortcuts`)*
 

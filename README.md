@@ -39,7 +39,7 @@ Prefer not to install an extension? You can also use the bookmarklet:
 2. Turn on **Developer mode** (top-right toggle).
 3. Click **Load unpacked** (top-left button).
 4. Select the [`bionic-reader`](./bionic-reader) folder.
-5. Pin the extension to your toolbar. Press <kbd>Alt</kbd> + <kbd>B</kbd> anytime to toggle!
+5. Pin the extension to your toolbar. Press <kbd>Option ⌥</kbd> / <kbd>Alt</kbd> + <kbd>B</kbd> anytime to toggle!
 
 ---
 

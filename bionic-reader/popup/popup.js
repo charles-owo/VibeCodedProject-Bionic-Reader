@@ -272,6 +272,12 @@ resetDefaultsBtn.addEventListener('click', () => {
 
 // Initialization
 async function init() {
+  const isMac = /Mac/i.test(navigator.userAgent || navigator.platform);
+  const shortcutKeyEl = document.getElementById('shortcutKey');
+  if (shortcutKeyEl) {
+    shortcutKeyEl.textContent = isMac ? 'Option ⌥' : 'Alt';
+  }
+
   chrome.storage.sync.get(DEFAULT_SETTINGS, (stored) => {
     currentSettings = { ...DEFAULT_SETTINGS, ...stored };
     updateUI();

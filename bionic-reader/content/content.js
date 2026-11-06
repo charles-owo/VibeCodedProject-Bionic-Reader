@@ -56,16 +56,16 @@
     'math'
   ];
 
-  // Additional selectors ignored on Notion (protect app navigation chrome & Notion headings)
+  // Additional selectors ignored on Notion (protect app navigation chrome & Notion headings).
+  // Note: We intentionally avoid container-level classes like .notion-header-block or .notion-sub_header-block
+  // because in toggle headings they wrap all nested child content. We target the leaf heading
+  // elements (h1-h6, [role="heading"], [placeholder="Heading 1/2/3"]) so child blocks are never blocked.
   const NOTION_IGNORED_SELECTORS = [
     ...COMMON_IGNORED_SELECTORS,
     '.notion-sidebar-container',
     '.notion-sidebar',
     '.notion-topbar',
     '.notion-topbar-action-buttons',
-    '.notion-header-block',
-    '.notion-sub_header-block',
-    '.notion-sub_sub_header-block',
     '[placeholder="Heading 1"]',
     '[placeholder="Heading 2"]',
     '[placeholder="Heading 3"]',
@@ -76,8 +76,9 @@
     '.notion-discussion-block',
     '.notion-page-properties',
     '.notion-collection-page-properties',
+    '.notion-button-block',
+    '.notion-toggle-button',
     'button',
-    '[role="button"]',
     '[role="menu"]',
     '[role="menuitem"]',
     '[role="toolbar"]'
@@ -228,6 +229,10 @@
       active.classList.contains('notion-frame') ||
       active.classList.contains('notion-app-inner')
     )) {
+      return false;
+    }
+    // If active element contains other selectable blocks, it's a container, not a single editing block
+    if (active.querySelector && active.querySelector('.notion-selectable, [data-block-id]')) {
       return false;
     }
     return active.contains(node);
@@ -492,7 +497,8 @@
         const nextState = !isActive;
         if (nextState) {
           enableBionic(currentSettings);
-          showToast('⚡ Bionic Reading: Active (Alt+B)', true);
+          const isMac = /Mac/i.test(navigator.userAgent || navigator.platform);
+          showToast(`⚡ Bionic Reading: Active (${isMac ? 'Option ⌥ + B' : 'Alt+B'})`, true);
         } else {
           disableBionic();
           showToast('Bionic Reading: Disabled', false);
