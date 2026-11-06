@@ -28,16 +28,19 @@
     'SVG', 'CANVAS', 'IFRAME', 'VIDEO', 'AUDIO', 'OBJECT', 'EMBED', 'MATH'
   ]);
 
-  // Selectors that should ALWAYS be ignored on all sites (code editors, bionic elements,
-  // headings, math equations)
-  const COMMON_IGNORED_SELECTORS = [
+  // Selectors that should ALWAYS be ignored on all sites (code editors, bionic elements)
+  const BASE_IGNORED_SELECTORS = [
     '.monaco-editor',
     '.CodeMirror',
     '.ace_editor',
     '.bionic-reader-text',
     '.bionic-reader-toast',
-    '[data-bionic-ignore]',
-    // Headings stay as-is (already carry their own emphasis)
+    '[data-bionic-ignore]'
+  ];
+
+  // Standard selectors ignored on regular non-reader sites (protect buttons, menus, inputs, headings, equations)
+  const STANDARD_IGNORED_SELECTORS = [
+    ...BASE_IGNORED_SELECTORS,
     'h1',
     'h2',
     'h3',
@@ -45,7 +48,6 @@
     'h5',
     'h6',
     '[role="heading"]',
-    // Math equations stay as-is (KaTeX, MathJax, Notion equation blocks)
     '.katex',
     '.katex-html',
     '.katex-display',
@@ -53,40 +55,7 @@
     'mjx-container',
     '.notion-equation-block',
     '.notion-text-equation-token',
-    'math'
-  ];
-
-  // Additional selectors ignored on Notion (protect app navigation chrome & Notion headings).
-  // Note: We intentionally avoid container-level classes like .notion-header-block or .notion-sub_header-block
-  // because in toggle headings they wrap all nested child content. We target the leaf heading
-  // elements (h1-h6, [role="heading"], [placeholder="Heading 1/2/3"]) so child blocks are never blocked.
-  const NOTION_IGNORED_SELECTORS = [
-    ...COMMON_IGNORED_SELECTORS,
-    '.notion-sidebar-container',
-    '.notion-sidebar',
-    '.notion-topbar',
-    '.notion-topbar-action-buttons',
-    '[placeholder="Heading 1"]',
-    '[placeholder="Heading 2"]',
-    '[placeholder="Heading 3"]',
-    '.notion-page-title',
-    '[placeholder="Untitled"]',
-    '.notion-page-discussion',
-    '.notion-page-comments',
-    '.notion-discussion-block',
-    '.notion-page-properties',
-    '.notion-collection-page-properties',
-    '.notion-button-block',
-    '.notion-toggle-button',
-    'button',
-    '[role="menu"]',
-    '[role="menuitem"]',
-    '[role="toolbar"]'
-  ];
-
-  // Standard selectors ignored on regular non-reader sites (protect buttons, menus, inputs)
-  const STANDARD_IGNORED_SELECTORS = [
-    ...COMMON_IGNORED_SELECTORS,
+    'math',
     '.notranslate',
     '[translate="no"]',
     'nav',
@@ -110,7 +79,7 @@
     '[contenteditable="true"]',
     '[contenteditable=""]',
     '[role="textbox"]'
-  ];
+  ].join(', ');
 
   // Known reader apps where contenteditable wraps the whole page
   function isKnownReaderApp() {
@@ -123,7 +92,41 @@
   }
 
   const isReaderApp = isKnownReaderApp();
-  const IGNORED_SELECTORS = (isReaderApp ? NOTION_IGNORED_SELECTORS : STANDARD_IGNORED_SELECTORS).join(', ');
+
+  // Leaf heading check: checks the immediate element and its direct parent (max 2 levels).
+  // This correctly ignores H1-H6, role="heading", and Notion heading blocks without EVER
+  // blocking child blocks nested inside a toggle heading container.
+  function isHeadingNode(node) {
+    const el = node.parentElement;
+    if (!el) return false;
+    if (/^H[1-6]$/i.test(el.tagName)) return true;
+    if (el.getAttribute && el.getAttribute('role') === 'heading') return true;
+    if (el.getAttribute && (el.getAttribute('placeholder') || '').startsWith('Heading')) return true;
+    if (el.classList && (el.classList.contains('notion-page-title') || el.getAttribute('placeholder') === 'Untitled')) return true;
+
+    const p = el.parentElement;
+    if (p) {
+      if (/^H[1-6]$/i.test(p.tagName)) return true;
+      if (p.getAttribute && p.getAttribute('role') === 'heading') return true;
+      if (p.getAttribute && (p.getAttribute('placeholder') || '').startsWith('Heading')) return true;
+      if (p.classList && (p.classList.contains('notion-page-title') || p.getAttribute('placeholder') === 'Untitled')) return true;
+    }
+    return false;
+  }
+
+  // Math equations: KaTeX, MathJax, native Math, Notion equation blocks
+  function isEquationNode(node) {
+    const p = node.parentElement;
+    if (!p || !p.closest) return false;
+    return !!p.closest('.katex, .katex-html, .katex-display, .MathJax, mjx-container, .notion-equation-block, .notion-text-equation-token, math');
+  }
+
+  // Notion UI chrome: sidebar, topbar, discussion/comments, properties, toggle chevrons
+  function isNotionChromeNode(node) {
+    const p = node.parentElement;
+    if (!p || !p.closest) return false;
+    return !!p.closest('.notion-sidebar-container, .notion-sidebar, .notion-topbar, .notion-topbar-action-buttons, .notion-page-discussion, .notion-page-comments, .notion-discussion-block, .notion-page-properties, .notion-collection-page-properties, .notion-toggle-button');
+  }
 
   function detectPageTheme() {
     try {
@@ -214,39 +217,37 @@
     return result;
   }
 
-  // In reader apps, skip only the element currently holding keyboard focus
-  // (e.g. while actively typing), but never skip the whole page/canvas container.
-  function isNodeInActiveEdit(node) {
-    const active = document.activeElement;
-    if (!active || active === document.body || active === document.documentElement) return false;
-    if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') {
-      return active.contains(node);
-    }
-    // Never treat whole page scrollers or content containers as a single edit target
-    if (active.classList && (
-      active.classList.contains('notion-page-content') ||
-      active.classList.contains('notion-scroller') ||
-      active.classList.contains('notion-frame') ||
-      active.classList.contains('notion-app-inner')
-    )) {
-      return false;
-    }
-    // If active element contains other selectable blocks, it's a container, not a single editing block
-    if (active.querySelector && active.querySelector('.notion-selectable, [data-block-id]')) {
-      return false;
-    }
-    return active.contains(node);
-  }
-
   function isValidTextNode(node) {
     if (!node || node.nodeType !== Node.TEXT_NODE) return false;
     if (!node.nodeValue || !node.nodeValue.trim()) return false;
     const parent = node.parentElement;
     if (!parent) return false;
     if (IGNORED_TAGS.has(parent.tagName)) return false;
-    if (!isReaderApp && parent.isContentEditable) return false;
-    if (isReaderApp && isNodeInActiveEdit(node)) return false;
-    if (parent.closest && parent.closest(IGNORED_SELECTORS)) return false;
+
+    // Code editors & bionic elements are always ignored
+    if (parent.closest && parent.closest('.monaco-editor, .CodeMirror, .ace_editor, .bionic-reader-text, .bionic-reader-toast, [data-bionic-ignore]')) {
+      return false;
+    }
+
+    // Headings stay plain (already prominent)
+    if (isHeadingNode(node)) return false;
+
+    // Math formulas stay plain
+    if (isEquationNode(node)) return false;
+
+    if (isReaderApp) {
+      if (isNotionChromeNode(node)) return false;
+      // Skip active input/textarea typing
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && active.contains(node)) {
+        return false;
+      }
+      return true;
+    }
+
+    // Regular non-reader websites
+    if (parent.isContentEditable) return false;
+    if (parent.closest && parent.closest(STANDARD_IGNORED_SELECTORS)) return false;
     return true;
   }
 
@@ -296,7 +297,7 @@
 
     if (endIndex < nodes.length) {
       if (window.requestIdleCallback) {
-        window.requestIdleCallback(() => processNodesBatch(nodes, endIndex, batchSize, settings, onComplete));
+        window.requestIdleCallback(() => processNodesBatch(nodes, endIndex, batchSize, settings, onComplete), { timeout: 150 });
       } else {
         setTimeout(() => processNodesBatch(nodes, endIndex, batchSize, settings, onComplete), 16);
       }
@@ -383,6 +384,13 @@
     observer = new MutationObserver((mutations) => {
       let hasNewNodes = false;
       for (const mutation of mutations) {
+        if (mutation.type === 'attributes') {
+          if (mutation.target && (mutation.target.getAttribute?.('aria-expanded') === 'true' || mutation.target.style?.display !== 'none')) {
+            pendingMutationNodes.push(mutation.target);
+            hasNewNodes = true;
+          }
+          continue;
+        }
         for (const node of mutation.addedNodes) {
           if (node.nodeType === Node.ELEMENT_NODE) {
             if (node.classList?.contains('bionic-reader-text') ||
@@ -427,7 +435,9 @@
 
     observer.observe(document.body || document.documentElement, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-expanded', 'style']
     });
   }
 
