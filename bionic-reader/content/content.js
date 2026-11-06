@@ -93,26 +93,58 @@
     }
   }
 
-  // Heading check: protects native headings and Notion headings while
-  // ensuring nested children inside toggle headings are NEVER blocked.
+  // Heading check: protects headings while never blocking body prose
   function isHeadingNode(node) {
     const el = node.parentElement;
     if (!el) return false;
-    if (el.closest('h1, h2, h3, h4, h5, h6, [role="heading"]')) return true;
-    if (el.closest('.notion-page-title, [placeholder="Untitled"]')) return true;
-    if (el.closest('[placeholder^="Heading"]')) return true;
 
-    // For Notion toggle headings (.notion-header-block, .notion-sub_header-block, etc.):
-    // The heading text itself is at the top level of the block, while nested children
-    // live inside .notion-page-content. If el is inside a nested .notion-page-content,
-    // it is a child block (paragraph, list, callout) and must NOT be ignored.
+    // 1. If el is inside any Notion body content block, it is 100% guaranteed to be prose, NEVER a heading!
+    if (el.closest('.notion-text-block, .notion-bulleted_list-block, .notion-numbered_list-block, .notion-to_do-block, .notion-callout-block, .notion-quote-block, .notion-table-block')) {
+      return false;
+    }
+
+    // 2. Direct Notion heading editable elements
+    if (el.closest('[placeholder="Heading 1"], [placeholder="Heading 2"], [placeholder="Heading 3"], [placeholder^="Heading"]')) {
+      return true;
+    }
+
+    // 3. Notion page title
+    if (el.closest('.notion-page-title, [placeholder="Untitled"]')) {
+      return true;
+    }
+
+    // 4. If inside a toggle block (.notion-toggle-block), it is body content, not a heading
+    if (el.closest('.notion-toggle-block')) {
+      return false;
+    }
+
+    // 5. Native semantic headings (H1-H6, role="heading")
+    // Only match if the heading element is the immediate text wrapper, NOT an outer container wrapping blocks
+    const headingEl = el.closest('h1, h2, h3, h4, h5, h6, [role="heading"]');
+    if (headingEl) {
+      if (headingEl.querySelector('.notion-selectable, .notion-text-block, .notion-toggle-block, p, div[contenteditable]')) {
+        let depth = 0;
+        let cur = el;
+        while (cur && cur !== headingEl && depth < 3) {
+          cur = cur.parentElement;
+          depth++;
+        }
+        return cur === headingEl;
+      }
+      return true;
+    }
+
+    // 6. Notion header blocks (.notion-header-block, .notion-sub_header-block, .notion-sub_sub_header-block)
+    // Only the direct heading title part (first child row) is a heading; nested children are not
     const headerBlock = el.closest('.notion-header-block, .notion-sub_header-block, .notion-sub_sub_header-block');
     if (headerBlock) {
-      const childContainer = el.closest('.notion-page-content');
-      if (!childContainer || !headerBlock.contains(childContainer)) {
+      const firstRow = headerBlock.firstElementChild;
+      if (firstRow && firstRow.contains(el)) {
         return true;
       }
+      return false;
     }
+
     return false;
   }
 
@@ -457,10 +489,15 @@
 
   function notifyBackground(active) {
     try {
-      chrome.runtime.sendMessage({
-        action: 'statusChanged',
-        active: active
-      }).catch(() => {});
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        const res = chrome.runtime.sendMessage({
+          action: 'statusChanged',
+          active: active
+        });
+        if (res && typeof res.catch === 'function') {
+          res.catch(() => {});
+        }
+      }
     } catch (e) {}
   }
 
