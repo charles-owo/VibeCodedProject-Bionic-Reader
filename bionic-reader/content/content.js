@@ -85,31 +85,33 @@
   function isKnownReaderApp() {
     try {
       const host = window.location.hostname;
-      return /(^|\.)(notion\.(so|com|site))$/i.test(host);
+      if (/(^|\.)(notion\.(so|com|site))$/i.test(host)) return true;
+      if (typeof document !== 'undefined' && document.querySelector('#notion-app, .notion-app-inner, .notion-frame, .notion-page-content')) return true;
+      return false;
     } catch (e) {
       return false;
     }
   }
 
-  const isReaderApp = isKnownReaderApp();
-
-  // Leaf heading check: checks the immediate element and its direct parent (max 2 levels).
-  // This correctly ignores H1-H6, role="heading", and Notion heading blocks without EVER
-  // blocking child blocks nested inside a toggle heading container.
+  // Heading check: protects native headings and Notion headings while
+  // ensuring nested children inside toggle headings are NEVER blocked.
   function isHeadingNode(node) {
     const el = node.parentElement;
     if (!el) return false;
-    if (/^H[1-6]$/i.test(el.tagName)) return true;
-    if (el.getAttribute && el.getAttribute('role') === 'heading') return true;
-    if (el.getAttribute && (el.getAttribute('placeholder') || '').startsWith('Heading')) return true;
-    if (el.classList && (el.classList.contains('notion-page-title') || el.getAttribute('placeholder') === 'Untitled')) return true;
+    if (el.closest('h1, h2, h3, h4, h5, h6, [role="heading"]')) return true;
+    if (el.closest('.notion-page-title, [placeholder="Untitled"]')) return true;
+    if (el.closest('[placeholder^="Heading"]')) return true;
 
-    const p = el.parentElement;
-    if (p) {
-      if (/^H[1-6]$/i.test(p.tagName)) return true;
-      if (p.getAttribute && p.getAttribute('role') === 'heading') return true;
-      if (p.getAttribute && (p.getAttribute('placeholder') || '').startsWith('Heading')) return true;
-      if (p.classList && (p.classList.contains('notion-page-title') || p.getAttribute('placeholder') === 'Untitled')) return true;
+    // For Notion toggle headings (.notion-header-block, .notion-sub_header-block, etc.):
+    // The heading text itself is at the top level of the block, while nested children
+    // live inside .notion-page-content. If el is inside a nested .notion-page-content,
+    // it is a child block (paragraph, list, callout) and must NOT be ignored.
+    const headerBlock = el.closest('.notion-header-block, .notion-sub_header-block, .notion-sub_sub_header-block');
+    if (headerBlock) {
+      const childContainer = el.closest('.notion-page-content');
+      if (!childContainer || !headerBlock.contains(childContainer)) {
+        return true;
+      }
     }
     return false;
   }
@@ -235,7 +237,7 @@
     // Math formulas stay plain
     if (isEquationNode(node)) return false;
 
-    if (isReaderApp) {
+    if (isKnownReaderApp()) {
       if (isNotionChromeNode(node)) return false;
       // Skip active input/textarea typing
       const active = document.activeElement;
@@ -482,6 +484,49 @@
       toast.classList.remove('bionic-toast-visible');
     }, 1800);
   }
+
+  // In-page keyboard shortcut handler (Option ⌥ + B on Mac, Alt+B on Windows/Linux)
+  // Provides an immediate reliable fallback when browser-level shortcuts are intercepted or unmapped
+  window.addEventListener('keydown', (e) => {
+    const isAltB = e.altKey && (e.code === 'KeyB' || e.key === 'b' || e.key === 'B' || e.key === '∫');
+    if (!isAltB || e.ctrlKey || e.metaKey) return;
+
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const nextState = !isActive;
+    if (nextState) {
+      enableBionic(currentSettings);
+      const isMac = /Mac/i.test(navigator.userAgent || navigator.platform);
+      showToast(`⚡ Bionic Reading: Active (${isMac ? 'Option ⌥ + B' : 'Alt+B'})`, true);
+    } else {
+      disableBionic();
+      showToast('Bionic Reading: Disabled', false);
+    }
+  }, true);
+
+  // Window message listener for programmatic testing and bridge calls
+  window.addEventListener('message', (event) => {
+    if (event.data && (event.data.action === 'toggle' || event.data.action === 'bionic-toggle')) {
+      if (event.data.enabled) {
+        enableBionic(event.data.settings || currentSettings);
+      } else {
+        disableBionic();
+      }
+    }
+  });
+
+  // Expose helper on window for test verification
+  window.__bionicToggle = (enabled, settings) => {
+    if (enabled) {
+      enableBionic(settings || currentSettings);
+    } else {
+      disableBionic();
+    }
+  };
 
   // Handle messages from popup or background
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
