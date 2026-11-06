@@ -10,9 +10,9 @@ A small collection of Chrome extensions. Currently contains one extension:
   Bionic Reading style (bold fixation anchors + dimmed rest letters) to guide eye saccades.
   Vanilla JS/CSS/HTML only. No dependencies, no bundler, no test framework.
 
-Supporting files at repo root: one-click installers (`install-mac.command`,
+Supporting files at repo root: desktop installers (`install-mac.command`,
 `install-windows.bat`), a no-install `bookmarklet.html` variant, packaged zips
-(`bionic-reader.zip`, `dist/bionic-reader.zip`), and Chrome Web Store art in `store-assets/`.
+(`bionic-reader.zip`), and Chrome Web Store art in `store-assets/`.
 
 ## Layout
 

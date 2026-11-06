@@ -52,6 +52,12 @@ Prefer not to install an extension? You can also use the bookmarklet:
 
 ---
 
+## 🤖 AI Agent Guidelines
+
+For AI coding agents working in this repository, see [`AGENTS.md`](./AGENTS.md) for architecture, invariants, and verification instructions.
+
+---
+
 ## ℹ️ Trademark Disclaimer
 
 "Bionic Reading" is a registered trademark of Bionic Reading AG. This open-source extension provides a bionic-style reading experience and is independently developed. It is not affiliated with, sponsored by, or endorsed by Bionic Reading AG.

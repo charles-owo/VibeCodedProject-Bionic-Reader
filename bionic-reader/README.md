@@ -89,8 +89,15 @@ bionic-reader/
 │   ├── popup.css         # Modern dark-mode popup styles
 │   └── popup.js          # Live settings controls and tab communication
 ├── test.html             # High-contrast demo & verification test page
+├── AGENTS.md             # Developer & AI agent specifications and invariants
 └── README.md
 ```
+
+---
+
+## 🤖 AI Agent Guidelines
+
+For AI coding agents working on this extension, see [`AGENTS.md`](./AGENTS.md) for architectural invariants, message protocols, and verification steps.
 
 ---
 
